@@ -1,0 +1,75 @@
+From eb9d12c6a61c5b9b46f714123306c22e7463048a Mon Sep 17 00:00:00 2001
+From: = <=>
+Date: Mon, 19 Nov 2018 10:53:20 +0100
+Subject: [PATCH] Adding xcopy2
+
+---
+ lib/Clipboard/Xclip.pm | 49 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 49 insertions(+)
+
+diff --git a/lib/Clipboard/Xclip.pm b/lib/Clipboard/Xclip.pm
+index 9da20cd..19b443d 100644
+--- a/lib/Clipboard/Xclip.pm
++++ b/lib/Clipboard/Xclip.pm
+@@ -1,5 +1,10 @@
+ package Clipboard::Xclip;
+ use Clipboard;
++use strict;
++use File::Which 'which';
++use Symbol;
++use POSIX;
++
+ sub copy {
+     my $self = shift;
+     my ($input) = @_;
+@@ -42,3 +47,47 @@ Here's the project homepage: http://sourceforge.net/projects/xclip/
+ 
+ EPIGRAPH
+ }
++
++sub copy2 {
++  my ($str) = @_;
++  my $prog = which('xsel');
++  if ($prog) {
++    copy2_guts($str, $prog, qw(-i -p));
++    copy2_guts($str, $prog, qw(-i -b));
++    return;
++  }
++  $prog = which('xclip');
++  if ($prog) {
++    copy2_guts($str, $prog, qw(-i -selection primary));
++    copy2_guts($str, $prog, qw(-i -selection clipboard));
++    return;
++  }
++  print STDERR "Neither xsel nor xclip is available\n";
++}
++
++sub copy2_guts {
++  my ($str, $cmd, @args) = @_;
++  my $pipe = Symbol::gensym;
++  # Use @args because it protects against shell-escapes.
++  if (!open($pipe, '|-', $cmd, @args)) {
++    #!! Obnoxious error message already printed by open();
++    #!! no known good way to prevent that;
++    #!! no need to print our own message.
++    #!! print STDERR "Unable to start cmd: $!\n";
++    #!! print STDERR " +++ $cmd ", join(' ', @args), "\n";
++    return;
++  }
++  print $pipe $str;
++  if (!close $pipe) {
++    my $x = ${^CHILD_ERROR_NATIVE};
++    if (WIFEXITED($x)) {
++      print STDERR "cmd exited with status ", WEXITSTATUS($x), "\n";
++    }
++    if (WIFSIGNALED($x)) {
++      print STDERR "cmd killed by signal ", WTERMSIG($x), "\n";
++    }
++    print STDERR " +++ $cmd ", join(' ', @args), "\n";
++  }
++}
++
++1;
+-- 
+2.18.1
+

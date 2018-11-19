@@ -1,0 +1,42 @@
+From 51aa815d7a4e068714939f09dfa542c06ad9a666 Mon Sep 17 00:00:00 2001
+From: = <=>
+Date: Mon, 19 Nov 2018 11:03:00 +0100
+Subject: [PATCH] Using copy2 from Xclip (modified Clipboard)
+
+---
+ kpcli | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/kpcli b/kpcli
+index c691e54..a488edc 100644
+--- a/kpcli
++++ b/kpcli
+@@ -41,6 +41,7 @@ use Term::ReadKey;           # non-core, libterm-readkey-perl on Ubuntu
+ use Term::ShellUI;           # non-core, libterm-shellui-perl on Ubuntu
+ use File::KeePass 0.03;      # non-core, libfile-keepass-perl on Ubuntu
+                              #  - >=v0.03 needed due critical bug fixes
++use Clipboard::Xclip;
+ 
+ # A developer convenience to force using a particular Term::ReadLine module
+ our $FORCED_READLINE = undef;	# Auto-select
+@@ -1753,7 +1754,7 @@ sub cli_xN($$) {
+ 
+   # If we're clearing the clipboard, just do that and return immediately.
+   if ($xNcmd eq 'xx') {
+-    Clipboard->copy('');
++    Clipboard::Xclip::copy2('');
+     print "Clipboard cleared.\n";
+     return;
+   }
+@@ -1786,7 +1787,7 @@ sub cli_xN($$) {
+ 	'xpx' => 'password',
+ 	};
+   if (defined($to_copy)) {
+-    Clipboard->copy($to_copy);
++    Clipboard::Xclip::copy2($to_copy);
+     print "Copied $cp_map->{$xNcmd} for \"$ent->{title}\" to the clipboard.\n";
+   }
+ 
+-- 
+2.18.1
+
