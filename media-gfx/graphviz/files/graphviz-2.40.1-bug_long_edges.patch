@@ -1,0 +1,274 @@
+From 326e0e9242d9ea8f113b61f2359c49cc65f082a5 Mon Sep 17 00:00:00 2001
+From: Rafael Palomar <rafael.palomar@rr-research.no>
+Date: Tue, 5 Feb 2019 11:47:12 +0100
+Subject: [PATCH] Solve bug on exponential lines with labels
+
+---
+ lib/dotgen/rank.c | 66 +++++++++++++++++++++++------------------------
+ 1 file changed, 33 insertions(+), 33 deletions(-)
+
+diff --git a/lib/dotgen/rank.c b/lib/dotgen/rank.c
+index 8542524..63e8f6a 100644
+--- a/lib/dotgen/rank.c
++++ b/lib/dotgen/rank.c
+@@ -2,7 +2,7 @@
+ /* vim:set shiftwidth=4 ts=8: */
+ 
+ /*************************************************************************
+- * Copyright (c) 2011 AT&T Intellectual Property 
++ * Copyright (c) 2011 AT&T Intellectual Property
+  * All rights reserved. This program and the accompanying materials
+  * are made available under the terms of the Eclipse Public License v1.0
+  * which accompanies this distribution, and is available at
+@@ -31,7 +31,7 @@
+ static void dot1_rank(graph_t * g, aspect_t* asp);
+ static void dot2_rank(graph_t * g, aspect_t* asp);
+ 
+-static void 
++static void
+ renewlist(elist * L)
+ {
+     int i;
+@@ -40,7 +40,7 @@ renewlist(elist * L)
+     L->size = 0;
+ }
+ 
+-static void 
++static void
+ cleanup1(graph_t * g)
+ {
+     node_t *n;
+@@ -58,8 +58,8 @@ cleanup1(graph_t * g)
+     for (n = agfstnode(g); n; n = agnxtnode(g, n)) {
+ 	for (e = agfstout(g, n); e; e = agnxtout(g, e)) {
+ 	    f = ED_to_virt(e);
+-	    /* Null out any other references to f to make sure we don't 
+-	     * handle it a second time. For example, parallel multiedges 
++	    /* Null out any other references to f to make sure we don't
++	     * handle it a second time. For example, parallel multiedges
+ 	     * share a virtual edge.
+ 	     */
+ 	    if (f && (e == ED_to_orig(f))) {
+@@ -90,13 +90,13 @@ cleanup1(graph_t * g)
+  * nodes of the labels.  This is done by doubling the input edge lengths.
+  * The input rank separation is adjusted to compensate.
+  */
+-static void 
++static void
+ edgelabel_ranks(graph_t * g)
+ {
+     node_t *n;
+     edge_t *e;
+ 
+-    if (GD_has_labels(g->root) & EDGE_LABEL) {
++    if (GD_has_labels(g) & EDGE_LABEL) {
+ 	for (n = agfstnode(g); n; n = agnxtnode(g, n))
+ 	    for (e = agfstout(g, n); e; e = agnxtout(g, e))
+ 		ED_minlen(e) *= 2;
+@@ -105,7 +105,7 @@ edgelabel_ranks(graph_t * g)
+ }
+ 
+ /* Merge the nodes of a min, max, or same rank set. */
+-static void 
++static void
+ collapse_rankset(graph_t * g, graph_t * subg, int kind)
+ {
+     node_t *u, *v;
+@@ -144,7 +144,7 @@ collapse_rankset(graph_t * g, graph_t * subg, int kind)
+     }
+ }
+ 
+-static int 
++static int
+ rank_set_class(graph_t * g)
+ {
+     static char *name[] = { "same", "min", "source", "max", "sink", NULL };
+@@ -159,7 +159,7 @@ rank_set_class(graph_t * g)
+     return val;
+ }
+ 
+-static int 
++static int
+ make_new_cluster(graph_t * g, graph_t * subg)
+ {
+     int cno;
+@@ -170,7 +170,7 @@ make_new_cluster(graph_t * g, graph_t * subg)
+     return cno;
+ }
+ 
+-static void 
++static void
+ node_induce(graph_t * par, graph_t * g)
+ {
+     node_t *n, *nn;
+@@ -200,7 +200,7 @@ node_induce(graph_t * par, graph_t * g)
+     }
+ }
+ 
+-void 
++void
+ dot_scan_ranks(graph_t * g)
+ {
+     node_t *n, *leader = NULL;
+@@ -252,7 +252,7 @@ cluster_leader(graph_t * clust)
+  * 3) In class1(), any inter-cluster edges are converted using
+  *    the "virtual node + 2 edges" trick.
+  */
+-static void 
++static void
+ collapse_cluster(graph_t * g, graph_t * subg)
+ {
+     if (GD_parent(subg)) {
+@@ -271,7 +271,7 @@ collapse_cluster(graph_t * g, graph_t * subg)
+ }
+ 
+ /* Execute union commands for "same rank" subgraphs and clusters. */
+-static void 
++static void
+ collapse_sets(graph_t *rg, graph_t *g)
+ {
+     int c;
+@@ -301,7 +301,7 @@ collapse_sets(graph_t *rg, graph_t *g)
+     }
+ }
+ 
+-static void 
++static void
+ find_clusters(graph_t * g)
+ {
+     graph_t *subg;
+@@ -311,7 +311,7 @@ find_clusters(graph_t * g)
+     }
+ }
+ 
+-static void 
++static void
+ set_minmax(graph_t * g)
+ {
+     int c;
+@@ -325,7 +325,7 @@ set_minmax(graph_t * g)
+ /* To ensure that min and max rank nodes always have the intended rank
+  * assignment, reverse any incompatible edges.
+  */
+-static point 
++static point
+ minmax_edges(graph_t * g)
+ {
+     node_t *n;
+@@ -356,8 +356,8 @@ minmax_edges(graph_t * g)
+     }
+     return slen;
+ }
+-    
+-static int 
++
++static int
+ minmax_edges2(graph_t * g, point slen)
+ {
+     node_t *n;
+@@ -397,7 +397,7 @@ void rank1(graph_t * g)
+     }
+ }
+ 
+-/* 
++/*
+  * Assigns ranks of non-leader nodes.
+  * Expands same, min, max rank sets.
+  * Leaf sets and clusters remain merged.
+@@ -472,7 +472,7 @@ saveVirtualEdges(graph_t *g)
+     node_t *n;
+     int cnt = 0;
+     int lc;
+-    
++
+     if (virtualEdgeHeadList != NULL) {
+ 	free(virtualEdgeHeadList);
+     }
+@@ -499,9 +499,9 @@ saveVirtualEdges(graph_t *g)
+ 		virtualEdgeHeadList[cnt] = e->head;
+ 		virtualEdgeTailList[cnt] = e->tail;
+ 		if (Verbose)
+-		    printf("saved virtual edge: %s->%s\n", 
+-			virtualEdgeTailList[cnt]->name, 
+-			virtualEdgeHeadList[cnt]->name);	    
++		    printf("saved virtual edge: %s->%s\n",
++			virtualEdgeTailList[cnt]->name,
++			virtualEdgeHeadList[cnt]->name);
+ 		cnt++;
+ 	    }
+ 	}
+@@ -517,7 +517,7 @@ restoreVirtualEdges(graph_t *g)
+     for (i = 0; i < nVirtualEdges; i++) {
+ 	if (virtualEdgeTailList[i] && virtualEdgeHeadList[i]) {
+ 	    if (Verbose)
+-		printf("restoring virtual edge: %s->%s\n", 
++		printf("restoring virtual edge: %s->%s\n",
+ 		    virtualEdgeTailList[i]->name, virtualEdgeHeadList[i]->name);
+ 	    virtual_edge(virtualEdgeTailList[i], virtualEdgeHeadList[i], NULL);
+ 	}
+@@ -604,7 +604,7 @@ merge_leaves(graph_t * g, node_t * cur, node_t * new)
+     return rv;
+ }
+ 
+-static void 
++static void
+ potential_leaf(graph_t * g, edge_t * e, node_t * leaf)
+ {
+     node_t *par;
+@@ -621,7 +621,7 @@ potential_leaf(graph_t * g, edge_t * e, node_t * leaf)
+ 	GD_inleaf(par) = merge_leaves(g, GD_inleaf(par), leaf);
+ }
+ 
+-static void 
++static void
+ collapse_leaves(graph_t * g)
+ {
+     node_t *n;
+@@ -661,14 +661,14 @@ collapse_leaves(graph_t * g)
+ #define TOPNODE     "\177top"
+ #define BOTNODE     "\177bot"
+ 
+-/* hops is not used in dot, so we overload it to 
++/* hops is not used in dot, so we overload it to
+  * contain the index of the connected component
+  */
+-#define ND_comp(n)  ND_hops(n)   
++#define ND_comp(n)  ND_hops(n)
+ 
+ extern int rank2(Agraph_t *, int, int, int);
+ 
+-static void set_parent(graph_t* g, graph_t* p) 
++static void set_parent(graph_t* g, graph_t* p)
+ {
+     GD_parent(g) = p;
+     make_new_cluster(p, g);
+@@ -862,7 +862,7 @@ static node_t* makeXnode (graph_t* G, char* name)
+     }
+     Last_node = n;
+     ND_next(n) = NULL;
+-    
++
+     return n;
+ }
+ 
+@@ -895,7 +895,7 @@ static void strong(graph_t * g, node_t * t, node_t * h, edge_t * orig)
+ 	(e = agfindedge(g, h, t)) || (e = agedge(g, t, h, 0, 1)))
+ 	merge(e, ED_minlen(orig), ED_weight(orig));
+     else
+-	agerr(AGERR, "ranking: failure to create strong constraint edge between nodes %s and %s\n", 
++	agerr(AGERR, "ranking: failure to create strong constraint edge between nodes %s and %s\n",
+ 	    agnameof(t), agnameof(h));
+ }
+ 
+@@ -1187,7 +1187,7 @@ static void my_init_edge(Agraph_t *g, Agobj_t *edge, void *arg)
+ static Agcbdisc_t mydisc = { {my_init_graph,0,0}, {my_init_node,0,0}, {my_init_edge,0,0} };
+ 
+ int infosizes[] = {
+-    sizeof(Agraphinfo_t), 
++    sizeof(Agraphinfo_t),
+     sizeof(Agnodeinfo_t),
+     sizeof(Agedgeinfo_t)
+ };
+-- 
+2.19.2
+
